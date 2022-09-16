@@ -112,6 +112,11 @@ var initCMD = cli.Command{
 			},
 			Action: initPier,
 		},
+		{
+			Name:   "directChain",
+			Usage:  "Initialize pier directChain mode configuration",
+			Action: initPier,
+		},
 	},
 }
 
@@ -186,6 +191,9 @@ func initPier(ctx *cli.Context) error {
 		}
 		vpr.Set("mode.type", "union")
 
+	case "directChain":
+		vpr.Set("mode.type", "directChain")
+
 	}
 
 	if err := updateInitOptions(ctx, vpr, repoRoot); err != nil {
@@ -254,8 +262,11 @@ func initClientWithKeyPath(ctx *cli.Context, chainAdminKeyPath string) (rpcx.Cli
 		break
 	case repo.UnionMode:
 		addrs = config.Mode.Union.Addrs
+	case repo.DirectChainMode: //TODO:jyb   client1 client2
+		addrs = config.Mode.DirectChain.SrcAddrs
 	}
 
+	
 	client, err := loadClient(chainAdminKeyPath, addrs, ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("load client: %w", err)

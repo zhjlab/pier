@@ -65,7 +65,9 @@ func (ex *Exchanger) Start() error {
 	// init meta info
 	var (
 		serviceList []string
-		err         error
+		// serviceList1 []string
+		// serviceList2 []string
+		err error
 	)
 
 	// start get ibtp to channel
@@ -81,33 +83,76 @@ func (ex *Exchanger) Start() error {
 	ex.destAdaptName = ex.destAdapt.Name()
 
 	if err := retry.Retry(func(attempt uint) error {
+		fmt.Println("get service id")
+		//change:clh
+
+		// if ex.mode == "directChain" {
+		// 	if serviceList1, err = ex.srcAdapt.GetServiceIDList(); err != nil {
+		// 		fmt.Println("serviceList1")
+		// 		fmt.Println(serviceList1)
+		// 		ex.logger.Errorf("get serviceIdList from srcAdapt", "error", err.Error())
+		// 		return err
+		// 	}
+		// 	if serviceList2, err = ex.destAdapt.GetServiceIDList(); err != nil {
+		// 		fmt.Println("serviceList2")
+		// 		fmt.Println(serviceList2)
+		// 		ex.logger.Errorf("get serviceIdList from destAdapt", "error", err.Error())
+		// 		return err
+		// 	}
+		// 	serviceList = append(serviceList1, serviceList2...)
+
+		// } else {
+		// 	if serviceList, err = ex.srcAdapt.GetServiceIDList(); err != nil {
+		// 		fmt.Println("serviceList")
+		// 	    fmt.Println(serviceList)
+		// 	    ex.logger.Errorf("get serviceIdList from srcAdapt", "error", err.Error())
+		// 	    return err
+		// 	}
+		// }
+
 		if serviceList, err = ex.srcAdapt.GetServiceIDList(); err != nil {
+			// fmt.Println("serviceList")
+			// fmt.Println(serviceList)
 			ex.logger.Errorf("get serviceIdList from srcAdapt", "error", err.Error())
 			return err
 		}
+
+		fmt.Println("serviceList")
+		fmt.Println(serviceList)
+
 		return nil
 	}, strategy.Wait(3*time.Second)); err != nil {
 		return fmt.Errorf("retry error to get serviceIdList from srcAdapt: %w", err)
 	}
 
 	for _, serviceId := range serviceList {
+		fmt.Println("serviceid")
+		fmt.Println(serviceId)
 		ex.srcServiceMeta[serviceId], err = ex.srcAdapt.QueryInterchain(serviceId)
 		if err != nil {
 			return fmt.Errorf("queryInterchain from srcAdapt: %w", err)
 		}
+
+		fmt.Println("ex.srcServiceMeta[serviceId]")
+		fmt.Println(ex.srcServiceMeta[serviceId])
 
 		if err := retry.Retry(func(attempt uint) error {
 			if ex.destServiceMeta[serviceId], err = ex.destAdapt.QueryInterchain(serviceId); err != nil {
 				// maybe peerMgr err cause QueryInterchain err, so retry it
 				ex.logger.Errorf("queryInterchain from destAdapt: %w", err)
 			}
+			fmt.Println("ex.destServiceMeta[serviceId]")
+			fmt.Println(ex.destServiceMeta[serviceId])
 			return err
 		}, strategy.Backoff(backoff.Fibonacci(1*time.Second))); err != nil {
 			ex.logger.Errorf("retry err with queryInterchain: %w", err)
 		}
+		fmt.Println("ex.srcServiceMeta[serviceId]")
+		fmt.Println(ex.srcServiceMeta[serviceId])
+
 	}
 
-	if repo.UnionMode == ex.mode {
+	if repo.UnionMode == ex.mode || repo.DirectChainMode == ex.mode {
 		ex.recoverUnion(ex.srcServiceMeta, ex.destServiceMeta)
 		// add self_interchains to srcServiceMeta
 		ex.fillSelfInterchain()
@@ -292,6 +337,8 @@ func (ex *Exchanger) listenIBTPFromSrcAdapt(servicePair string) {
 				ex.logger.Warn("Unexpected closed channel while listening on interchain ibtp")
 				return
 			}
+			fmt.Println("ex.srcAdaptName")
+			fmt.Println(ex.srcAdaptName)
 			ex.logger.WithFields(logrus.Fields{"index": ibtp.Index, "type": ibtp.Type, "ibtp_id": ibtp.ID()}).Info("Receive ibtp from :", ex.srcAdaptName)
 			index := ex.getCurrentIndexFromSrc(ibtp)
 			if index >= ibtp.Index {
@@ -380,7 +427,14 @@ func (ex *Exchanger) isIBTPBelongSrc(ibtp *pb.IBTP) bool {
 		if strings.EqualFold(ex.srcBxhId, bxhID) {
 			isIBTPBelongSrc = true
 		}
-	}
+	//change:clh
+	case repo.DirectChainMode:
+		if strings.EqualFold(ex.srcBxhId, bxhID) || strings.EqualFold(ex.srcChainId, bxhID) {
+			fmt.Println("------------------------")
+			fmt.Println(ex.srcBxhId)
+			isIBTPBelongSrc = true
+		}
+	} // TODO:jyb
 	return isIBTPBelongSrc
 }
 

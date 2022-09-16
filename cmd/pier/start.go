@@ -30,6 +30,10 @@ func start(ctx *cli.Context) error {
 	fmt.Println(getVersion(true))
 
 	repoRoot, err := repo.PathRootWithDefault(ctx.GlobalString("repo"))
+
+	fmt.Println("repoRoot")
+	fmt.Println(repoRoot)
+
 	if err != nil {
 		return err
 	}
@@ -37,6 +41,10 @@ func start(ctx *cli.Context) error {
 	repo.SetPath(repoRoot)
 
 	config, err := repo.UnmarshalConfig(repoRoot)
+
+	// fmt.Println("config")
+	// fmt.Println(config)
+
 	if err != nil {
 		return fmt.Errorf("init config error: %s", err)
 	}
@@ -56,11 +64,14 @@ func start(ctx *cli.Context) error {
 	// init loggers map for pier
 	loggers.InitializeLogger(config)
 
-	if config.Mode.Type != repo.UnionMode {
+	if config.Mode.Type != repo.UnionMode && config.Mode.Type != repo.DirectChainMode {
 		if err := checkPlugin(config.Appchain.Plugin); err != nil {
 			return fmt.Errorf("check plugin: %w", err)
 		}
 	}
+
+	fmt.Println("config.Mode.DirectChain.SrcAddrs")
+	fmt.Println(config.Mode.DirectChain.SrcAddrs)
 
 	pier, err := app.NewPier(repoRoot, config)
 	if err != nil {

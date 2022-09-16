@@ -140,7 +140,7 @@ func (b *BxhAdapter) SendIBTP(ibtp *pb.IBTP) error {
 	proof := ibtp.GetProof()
 	proofHash := sha256.Sum256(proof)
 	ibtp.Proof = proofHash[:]
-	if b.mode == repo.UnionMode {
+	if b.mode == repo.UnionMode || b.mode == repo.DirectChainMode {
 		ibtp.Extra = proof
 	}
 
@@ -326,22 +326,35 @@ func (b *BxhAdapter) GetServiceIDList() ([]string, error) {
 	if b.mode == repo.RelayMode {
 		return nil, nil
 	}
+	//fmt.Println("get service id list")
 	tx, err := b.client.GenerateContractTx(pb.TransactionData_BVM, constant.InterchainContractAddr.Address(),
 		"GetAllServiceIDs")
+
+	fmt.Println(tx)
 	if err != nil {
 		panic(err)
 	}
 
 	ret := getTxView(b.client, tx)
+	// fmt.Println("ret")
+	// fmt.Println(ret)
 
 	services := make([]string, 0)
+	// fmt.Println("services")
+	// fmt.Println(services)
+
 	if err := json.Unmarshal(ret, &services); err != nil {
 		panic(err)
 	}
+	fmt.Println("services")
+	fmt.Println(services)
 
 	ids := make([]string, 0)
 
 	bitXHubChainIDs, err := b.getBitXHubChainIDs()
+
+	fmt.Println("bitXHubChainIDs")
+	fmt.Println(bitXHubChainIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -356,12 +369,21 @@ func (b *BxhAdapter) GetServiceIDList() ([]string, error) {
 			b.logger.WithField("service", service).Warnf("ParseFullServiceID err:%s", err.Error())
 			continue
 		}
+		fmt.Println("ParseFullServiceID(service)")
+		fmt.Println(bxh)
+		// fmt.Println(b.ID())
 		if bxh != b.ID() {
+			fmt.Println("------------------bxh!=b.id-----------")
 			_, ok := bitXHubChainIDsMap[bxh]
+			fmt.Println(ok)
 			if ok {
 				ids = append(ids, service)
 			}
 		}
+		fmt.Println("bitXHubChainIDsMap")
+		fmt.Println(bitXHubChainIDsMap)
+		fmt.Println("ids")
+		fmt.Println(ids)
 	}
 
 	return ids, nil
@@ -416,7 +438,9 @@ func (b *BxhAdapter) run() {
 		subscriptType pb.SubscriptionRequest_Type
 		rawCh         <-chan interface{}
 	)
-	if b.mode == repo.UnionMode {
+
+	//|| b.mode == repo.DirectChainMode
+	if b.mode == repo.UnionMode || b.mode == repo.DirectChainMode{
 		subscriptType = pb.SubscriptionRequest_UNION_INTERCHAIN_TX_WRAPPER
 	} else {
 		subscriptType = pb.SubscriptionRequest_INTERCHAIN_TX_WRAPPER
@@ -424,6 +448,10 @@ func (b *BxhAdapter) run() {
 	// retry for network reason
 	if err := retry.Retry(func(attempt uint) error {
 		rawCh, err = b.client.Subscribe(b.ctx, subscriptType, []byte(b.appchainId))
+		fmt.Println("------------------------11111111------------")
+		fmt.Println(b.ctx)
+		fmt.Println(b.appchainId)
+
 		if err != nil {
 			return err
 		}
@@ -454,6 +482,9 @@ func (b *BxhAdapter) listenInterchainTxWrappers() {
 	for {
 		select {
 		case wrappers := <-b.wrappersC:
+			// fmt.Println("wrappers")
+			// fmt.Println(wrappers)
+
 			if nil == wrappers {
 				continue
 			}
