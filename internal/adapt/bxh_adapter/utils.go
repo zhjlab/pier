@@ -28,6 +28,7 @@ const (
 )
 
 func getTxView(client rpcx.Client, tx *pb.BxhTransaction) []byte {
+	// fmt.Println("get tx view ")
 	var (
 		receipt     *pb.Receipt
 		err         error
@@ -37,6 +38,7 @@ func getTxView(client rpcx.Client, tx *pb.BxhTransaction) []byte {
 	logger := loggers.Logger(loggers.App)
 	if err := retry.Retry(func(attempt uint) error {
 		receipt, err = client.SendView(tx)
+		// fmt.Println("11111111111111111")
 		if err != nil {
 			logger.Errorf("send view to bitxhub error: %v ... retry later", err)
 			return err

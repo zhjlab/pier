@@ -1,0 +1,27 @@
+{
+    "workbench.editor.enablePreview": false,
+    "editor.fontLigatures": true,
+    "editor.fontSize": 20, 
+    "editor.fontFamily": "'Ubuntu Mono derivative Powerline'",
+    "terminal.integrated.fontFamily": "monospace",
+    "terminal.integrated.fontSize": 17,
+    "workbench.fontAliasing": "antialiased",
+    "go.inferGopath": false,
+    "go.autocompleteUnimportedPackages": true,
+    "go.useLanguageServer": true,
+    "go.lintTool": "golangci-lint",
+    "go.docsTool": "godoc",
+    "go.buildFlags": [],
+    "go.lintFlags": [],
+    "go.vetFlags": [],
+    "go.gocodePackageLookupMode": "go",
+    "go.gotoSymbol.includeImports": true,
+    "go.useCodeSnippetsOnFunctionSuggest": true,
+    "go.useCodeSnippetsOnFunctionSuggestWithoutType": true,
+    "go.formatTool": "goreturns", 
+    "go.gocodeAutoBuild": false,
+    "go.liveErrors": {
+        "enabled": true,
+        "delay": 0
+    }
+  }

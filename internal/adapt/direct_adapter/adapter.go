@@ -51,7 +51,7 @@ func (d *DirectAdapter) SendUpdatedMeta(byte []byte) error {
 	panic("implement me")
 }
 
-func (d *DirectAdapter) GetServiceIDList() ([]string, error) {
+func (d *DirectAdapter) GetServiceIDList() ([]string, error) {	
 	panic("implement me")
 }
 

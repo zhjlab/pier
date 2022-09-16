@@ -130,6 +130,8 @@ func registerPier(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	//TODO:clh
+	//每次重新生成一个key.json
 	keyPath := filepath.Join(repoRoot, "key.json")
 
 	var client rpcx.Client
@@ -395,6 +397,7 @@ func getAppchain(ctx *cli.Context) error {
 }
 
 func loadClient(keyPath string, grpcAddrs []string, ctx *cli.Context) (rpcx.Client, error) {
+	fmt.Println("load client")
 	repoRoot, err := repo.PathRootWithDefault(ctx.GlobalString("repo"))
 	if err != nil {
 		return nil, err

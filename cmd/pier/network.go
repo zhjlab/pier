@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/meshplus/pier/internal/repo"
-	"github.com/spf13/viper"
-	"github.com/urfave/cli"
 	"net"
 	"path/filepath"
 	"strings"
+
+	"github.com/meshplus/pier/internal/repo"
+	"github.com/spf13/viper"
+	"github.com/urfave/cli"
 )
 
 var networkCMD = cli.Command{
